@@ -1,0 +1,354 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/KristinaLipskaya/home_i-shop_api/1.0.0
+info:
+  description: API for the i-shop (Homework)
+  version: "1.0.0"
+  title: API for the i-shop (Homework)
+  contact:
+    email: linnenchristina@gmail.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: admins
+    description: Авторизированный пользователь с доступом к админ-панели
+  - name: users
+    description: Незарегистрированный/неавторизованный пользователь
+  - name: clients
+    description: Зарегистрированный/авторизованный пользователь
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - users
+      summary: US-1. Вход в систему / личный кабинет
+      description: Аутентификация пользователя с использованием логина и пароля.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  description: Логин пользователя
+                  example: "user123@gmail.com"
+                password:
+                  type: string
+                  format: password
+                  description: Пароль пользователя
+                  example: "password123"
+      responses:
+        '200':
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Bearer Token для аутентификации
+                    example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEyMzQiLCJ1c2VybmFtZSI6ImJpcnNjaG5lcnNvZXZfaGVsbG9fc2VjdXJpdHkiLCJyb2xlIjoidXNlciJ9.cZL6FJ2EKzK4gSKpPVo5v6poE1T9m3MxoA3on8RHkJ2I"
+        '401':
+          description: Неправильный логин или пароль
+
+  /products:
+    get:
+      tags:
+        - admins
+        - users
+        - clients
+      summary: US-2-1. Посмотреть все товары
+      description: Получение товаров по ШК в магазине с поддержкой пагинации и сортировки.
+      parameters:
+        - name: search
+          in: query
+          description: Поиск по ШК (`Product_Barcode`).
+          required: true
+          schema:
+            type: integer
+            example: 4810168055479
+        - name: page
+          in: query
+          description: Номер страницы для пагинации.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Количество товаров на странице.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: sort
+          in: query
+          description: Поле для сортировки (`Product_name`).
+          required: false
+          schema:
+            type: string
+            enum: [Product_name]
+            default: Product_name
+        - name: order
+          in: query
+          description: Порядок сортировки.
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Список товаров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/product'
+        '404':
+          description: Продукт с данным штрихкодом не найден 
+
+  /products/{Product_id}:
+    delete:
+      tags:
+        - admins
+      summary: Удаление товара
+      operationId: deleteProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Product_id
+          in: path
+          description: Идентификатор товара, который нужно удалить
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Товар удален
+        '400':
+          description: Некорректные данные
+        '404':
+          description: Товар не найден
+        '500':
+          description: Внутренняя ошибка сервера             
+
+  /reviews:
+    post:
+      tags:
+        - clients
+      summary: US-3. Оставить отзыв на товар
+      security:
+        - bearerAuth: []
+      description: Авторизованный пользователь оставляет отзыв на товар.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reviews'
+      responses:
+        '201':
+          description: отзыв добавлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Отзыв успешно добавлен"
+                  reviews_id:
+                    type: integer
+                    example: 1
+                  reviews_status:
+                    type: boolean
+                    example: true
+        '404':
+          description: Данного продукта не существует
+        '400':
+          description: Некорректный ввод
+        '401':
+          description: Чтобы оставить отзыв, необходимо пройти аутентификацию
+        '403':
+          description: Чтобы оставить отзыв, необходимо приобрести товар
+
+  /profiles/{profil-id}:
+    patch:
+      tags:
+        - clients
+      summary: US-4. Редактировать данные в ЛК
+      security:
+        - bearerAuth: []
+      description: Авторизованный пользователь редактирует данные в профиле.
+      parameters:
+        - name: profil-id
+          in: path
+          description: Идентификатор профиля, который нужно изменить
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/profiles'
+        description: Данные, которые необходимо изменить
+      responses:
+        '201':
+          description: Данные изменены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Изменения сохранены"
+                  profil-id:
+                    type: integer
+                    example: 123
+        '404':
+          description: Данные не могут быть изменены
+        '400':
+          description: Некорректный ввод
+        '401':
+          description: Для изменения данных необходимо пройти аутентификацию
+        '403':
+          description: У вас нет разрешения на выполнение этого действия
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
+  schemas:
+    product:
+      type: object
+      required:
+        - Product_id
+        - Product_name
+        - Product_Promotion
+        - Product_Starting_price
+        - Discount_Product
+        - Product_Discounted_price
+      properties:
+        Product_id:
+          type: integer
+          format: serial
+          description: идентификатор товара
+          example: 5614
+        Product_name:
+          type: string
+          description: название товара
+          example: "Природная питьевая негазированная 0,5л"
+        Product_Promotion:
+          type: string
+          description: Акция
+          example: "Неделька"
+        Product_Starting_price:
+          type: number
+          format: decimal
+          description: стартовая цена
+          example: 1.20
+        Discount_Product:
+          type: number
+          format: decimal
+          description: Скидка акционная
+          example: 10.00
+        Product_Discounted_price:
+          type: number
+          format: decimal
+          description: Стоимость со скидкой
+          example: 1.08
+    reviews:
+      type: object
+      required:
+        - Profiles_id
+        - Products_id
+        - Reviews_text
+        - Reviews_date
+      properties:
+        Profiles_id:
+          type: integer
+          format: serial
+          description: идентификатор пользователя
+          example: 123
+        Products_id:
+          type: integer
+          format: serial
+          description: идентификатор товара
+          example: 5614
+        Reviews_text:
+          type: string
+          description: текст отзыва
+          example: "Отличный товар"
+        Reviews_date:
+          type: string
+          format: date
+          description: дата отзыва
+          example: '2025-03-05'
+    profiles:
+      type: object
+      required:
+        - First_name
+        - Last_name
+        - Middle_name
+        - Phone
+        - Discount_card_number
+        - Date_of_birth
+        - Gender
+        - Delivery_address
+      properties:
+        First_name:
+          type: string
+          description: Фамилия
+          example: "Липская"
+        Last_name:
+          type: string
+          description: Имя
+          example: "Кристина"
+        Middle_name:
+          type: string
+          description: Отчество
+          example: "Анатольевна"
+        Phone:
+          type: string
+          description: Телефон
+          example: "+375291234567" 
+        Discount_card_number:
+          type: integer
+          description: Номер дисконтной карты
+          example: 3049447           
+        Date_of_birth:
+          type: string
+          format: date
+          description: Дата рождения
+          example: '1985-04-23'
+        Gender:
+          type: string
+          description: Пол
+          example: "женский"
+        Delivery_address:
+          type: string
+          description: Адрес доставки
+          example: "г.Минск ул. Кульман д. 35А кв.202"
