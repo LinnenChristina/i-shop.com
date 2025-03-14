@@ -7,4 +7,6 @@
 ## Нефункциональные требования (НФТ) 
 НФТ для разработки онлайн-магазина представлены в файле [НФТ.md](https://github.com/LinnenChristina/i-shop.com/blob/main/%D0%9D%D0%A4%D0%A2/%D0%9D%D0%A4%D0%A2.md)
 ## Архитектура проекта
-Архитектура проекта описана в парке [System Architecture](https://github.com/LinnenChristina/i-shop.com/tree/main/System%20Architecture) 
+Архитектура проекта описана в папке [System Architecture](https://github.com/LinnenChristina/i-shop.com/tree/main/System%20Architecture) 
+## База данных
+База данных и работа с ней описана в папке [DB](https://github.com/LinnenChristina/i-shop.com/tree/main/DB)
