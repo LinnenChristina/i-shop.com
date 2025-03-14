@@ -10,3 +10,5 @@
 Архитектура проекта описана в папке [System Architecture](https://github.com/LinnenChristina/i-shop.com/tree/main/System%20Architecture) 
 ## База данных
 База данных и работа с ней описана в папке [DB](https://github.com/LinnenChristina/i-shop.com/tree/main/DB)
+## API
+Докуметация API для работы с проектом представлена в [файле](https://github.com/LinnenChristina/i-shop.com/blob/main/API/API_Swagger) дополнительно ознакомится можно прейдя по сслыке: https://app.swaggerhub.com/apis/KristinaLipskaya/home_i-shop_api/1.0.0#/
